@@ -1,0 +1,12 @@
+main():
+Controls the flow.
+
+Calls:
+load_data()
+clean_data()
+analyze_salary()
+analyze_skills()
+analyze_remote()
+generate_report()
+
+dates are in MM/DD/YYYY
