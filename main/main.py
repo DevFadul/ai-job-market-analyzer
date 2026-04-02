@@ -51,7 +51,48 @@ def analyze_salary(df:pd.DataFrame) -> dict:
     size_stats = size_stats.sort_values("size_rank").drop(columns=["size_rank"])
 
     results["company_size_salary"] = size_stats
-    
+
+    return results
+
+def analyze_skills(df: pd.DataFrame) -> dict:
+    results = {}
+    df_edu = df.dropna(subset=["education_required"]).copy()
+    df_edu["education_required"] = df_edu["education_required"].astype(str).str.strip()
+    edu_counts = (
+        df_edu["education_required"]
+        .value_counts()
+        .rename_axis("education_required")
+        .reset_index(name="count")
+    )
+    most_common_education = edu_counts.iloc[0]["education_required"] if len(edu_counts) > 0 else None
+    results["education_counts"] = edu_counts
+    results["most_common_education"] = most_common_education
+    # 5) Do higher benefits correlate to higher salary?
+    df_ben = df.dropna(subset=["salary_usd", "benefits_score"]).copy()
+    df_ben["salary_usd"] = pd.to_numeric(df_ben["salary_usd"], errors="coerce")
+    df_ben["benefits_score"] = pd.to_numeric(df_ben["benefits_score"], errors="coerce")
+
+    benefits_salary_corr = df_ben["salary_usd"].corr(df_ben["benefits_score"])
+    # Also compute average salary by benefits tiers (quantile-based buckets).
+    # This gives you an easier-to-read "is it higher at higher tiers?" view.
+    benefits_tier_table = None
+    try:
+        df_ben["benefits_tier"] = pd.qcut(
+            df_ben["benefits_score"],
+            q=3,
+            labels=["Low", "Medium", "High"],
+            duplicates="drop" 
+        )
+        benefits_tier_table = (
+            df_ben.groupby("benefits_tier")["salary_usd"]
+            .agg(avg_salary="mean", count="count")
+            .reset_index()
+            .sort_values("benefits_tier")
+        )
+    except Exception:
+        benefits_tier_table = None
+    results["benefits_correlation"] = benefits_salary_corr
+    results["benefits_salary_by_tier"] = benefits_tier_table
     return results
 
 
