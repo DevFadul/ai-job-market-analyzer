@@ -81,7 +81,7 @@ def analyze_skills(df: pd.DataFrame) -> dict:
             df_ben["benefits_score"],
             q=3,
             labels=["Low", "Medium", "High"],
-            duplicates="drop" 
+            duplicates="drop"   
         )
         benefits_tier_table = (
             df_ben.groupby("benefits_tier")["salary_usd"]
@@ -95,6 +95,26 @@ def analyze_skills(df: pd.DataFrame) -> dict:
     results["benefits_salary_by_tier"] = benefits_tier_table
     return results
 
+def analyze_remote(df: pd.DataFrame) -> dict:
+    results = {}
+    df_remote = df.dropna(subset=["salary_usd", "remote_ratio"]).copy()
+    df_remote["salary_usd"] = pd.to_numeric(df_remote["salary_usd"], errors="coerce")
+    df_remote["remote_ratio"] = pd.to_numeric(df_remote["remote_ratio"], errors="coerce")
+    # 6) Does remote ratio affect salary?
+    remote_order = [0, 50, 100]
+    remote_stats = (
+        df_remote.groupby("remote_ratio")["salary_usd"]
+        .agg(avg_salary="mean", median_salary="median", count="count")
+        .reset_index()
+    )
+    remote_rank = {lvl: i for i, lvl in enumerate(remote_order)}
+    remote_stats["remote_rank"] = remote_stats["remote_ratio"].map(remote_rank)
+    remote_stats = remote_stats.sort_values("remote_rank").drop(columns=["remote_rank"])
+    # Pearson correlation between remote_ratio and salary_usd
+    remote_salary_corr = df_remote["salary_usd"].corr(df_remote["remote_ratio"])
+    results["remote_salary_stats"] = remote_stats
+    results["remote_salary_correlation"] = remote_salary_corr
+    return results
 
 
 df = read_data('../data/ai_job_dataset.csv')
