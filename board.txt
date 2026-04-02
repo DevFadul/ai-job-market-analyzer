@@ -1,5 +1,3 @@
-main():
-Controls the flow.
 
 Calls:
 load_data()

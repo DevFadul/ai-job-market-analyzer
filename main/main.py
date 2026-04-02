@@ -83,7 +83,7 @@ def analyze_skills(df: pd.DataFrame) -> dict:
             duplicates="drop"   
         )
         benefits_tier_table = (
-            df_ben.groupby("benefits_tier")["salary_usd"]
+            df_ben.groupby("benefits_tier", observed=True)["salary_usd"]
             .agg(avg_salary="mean", count="count")
             .reset_index()
             .sort_values("benefits_tier")
@@ -166,7 +166,10 @@ def generate_report(salary_results: dict, skills_results: dict, remote_results: 
 
 
 if __name__ == "__main__":
-    _data = Path(__file__).resolve().parent.parent / "data" / "ai_job_dataset.csv"
+    from pdf_report import generate_board_pdf
+
+    _root = Path(__file__).resolve().parent.parent
+    _data = _root / "data" / "ai_job_dataset.csv"
     df = read_data(_data)
     df = clean_data(df)
 
@@ -176,4 +179,13 @@ if __name__ == "__main__":
 
     report = generate_report(salary_results, skills_results, remote_results)
     print(report)
+
+    _pdf_path = generate_board_pdf(
+        _root / "reports" / "ai_job_market_board_report.pdf",
+        df,
+        salary_results,
+        skills_results,
+        remote_results,
+    )
+    print(f"\nPDF report written to: {_pdf_path}")
 
