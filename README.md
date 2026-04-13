@@ -71,5 +71,5 @@ The PDF layers a longer narrative (cover, key findings, implications, numbered i
 
 ## Honest limitations
 Correlations are associations, not proof of cause.
-Industry and remote numbers don’t control for seniority mix, location, or job title—so treat rankings as signals, not final truth.
+Industry and remote numbers don’t control for seniority mix, location, or job title; therefore, treat rankings as signals, not final truth.
 benefits_score is a coarse scalar; weak correlation doesn’t mean “benefits don’t matter,” only that this score doesn’t track pay linearly here.
